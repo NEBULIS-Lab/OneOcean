@@ -1,0 +1,45 @@
+# IDE / OS
+.idea/
+.DS_Store
+Thumbs.db
+
+# Python cache / build
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+
+# Virtual environments
+.venv/
+.venv*/
+venv/
+
+# Notebook policy
+*.ipynb
+
+# Dataset and large artifacts
+*.nc
+*.parquet
+*.ref
+*.tif
+*.tiff
+*.zarr/
+*.zip
+
+# Local runs and caches
+runs/
+OCPNet/output/
+Data_pipeline/Data/
+Data_pipeline/output/
+Data_pipeline/**/variants/
+
+# Credentials
+.copernicusmarine/
+
+# Local paper or preview artifacts (keep the published manuscript PDFs)
+docs/*.pdf
+!docs/oneocean_paper.pdf
+!docs/oneocean_appendix.pdf

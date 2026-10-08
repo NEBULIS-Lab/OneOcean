@@ -1,0 +1,16 @@
+copernicusmarine
+xarray
+netCDF4
+h5netcdf
+h5py
+rasterio
+numpy
+scipy
+pandas
+dask
+matplotlib
+imageio
+Pillow
+opencv-python
+mujoco
+pytest

@@ -1,0 +1,456 @@
+from __future__ import annotations
+
+import hashlib
+import json
+import math
+import os
+import time
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+
+
+@dataclass(frozen=True)
+class LLMPlannerConfig:
+    model_path: str
+    cache_dir: str
+    call_stride_steps: int = 30
+    max_new_tokens: int = 192
+
+
+class LLMPlanner:
+    def __init__(self, cfg: LLMPlannerConfig) -> None:
+        self.cfg = cfg
+        self.cache_dir = Path(str(cfg.cache_dir)).expanduser().resolve() if str(cfg.cache_dir).strip() else None
+        if self.cache_dir is not None:
+            self.cache_dir.mkdir(parents=True, exist_ok=True)
+
+        # Lazy-loaded (only when first used).
+        self._tok = None
+        self._model = None
+
+    def _ensure_model(self) -> None:
+        if self._tok is not None and self._model is not None:
+            return
+        mp = str(self.cfg.model_path).strip()
+        if not mp:
+            raise ValueError("LLMPlanner requires a non-empty model_path.")
+        cached = _GLOBAL_MODEL_CACHE.get(mp)
+        if cached is not None:
+            self._tok, self._model = cached
+            return
+        # Import torch/transformers only when LLM planning is enabled.
+        from transformers import AutoModelForCausalLM, AutoTokenizer  # type: ignore
+        import torch
+
+        tok = AutoTokenizer.from_pretrained(mp, trust_remote_code=True)
+        model = AutoModelForCausalLM.from_pretrained(
+            mp,
+            trust_remote_code=True,
+            torch_dtype=torch.bfloat16 if torch.cuda.is_available() else None,
+            device_map="auto",
+        )
+        model.eval()
+        self._tok = tok
+        self._model = model
+        _GLOBAL_MODEL_CACHE[mp] = (tok, model)
+
+    def _generate_text(self, prompt: str) -> tuple[str, dict[str, Any]]:
+        """Best-effort deterministic text generation across heterogeneous HF/remote-code chat models."""
+        self._ensure_model()
+        assert self._tok is not None and self._model is not None
+
+        tok = self._tok
+        model = self._model
+
+        def _count_tokens(txt: str) -> int | None:
+            try:
+                ids = tok.encode(str(txt))
+                return int(len(ids))
+            except Exception:
+                return None
+
+        prompt_tokens = _count_tokens(str(prompt))
+
+        # Some remote-code chat models (notably ChatGLM variants) implement a custom `.chat` interface and
+        # can be incompatible with transformers' generation cache helpers. Prefer `.chat` when available.
+        if hasattr(model, "chat"):
+            try:
+                # Common signature: chat(tokenizer, query, history=[])
+                t0 = time.time()
+                out = model.chat(  # type: ignore[attr-defined]
+                    tok,
+                    str(prompt),
+                    history=[],
+                    do_sample=False,
+                    temperature=0.0,
+                    top_p=1.0,
+                    max_new_tokens=int(self.cfg.max_new_tokens),
+                )
+                dt_ms = 1000.0 * (time.time() - t0)
+                if isinstance(out, tuple) and out:
+                    txt = str(out[0])
+                else:
+                    txt = str(out)
+                return txt, {"latency_ms": float(dt_ms), "prompt_tokens": prompt_tokens, "output_tokens": _count_tokens(txt)}
+            except Exception:
+                try:
+                    t0 = time.time()
+                    out = model.chat(  # type: ignore[attr-defined]
+                        tok,
+                        str(prompt),
+                        do_sample=False,
+                        temperature=0.0,
+                        top_p=1.0,
+                        max_new_tokens=int(self.cfg.max_new_tokens),
+                    )
+                    dt_ms = 1000.0 * (time.time() - t0)
+                    if isinstance(out, tuple) and out:
+                        txt = str(out[0])
+                    else:
+                        txt = str(out)
+                    return txt, {"latency_ms": float(dt_ms), "prompt_tokens": prompt_tokens, "output_tokens": _count_tokens(txt)}
+                except Exception:
+                    try:
+                        t0 = time.time()
+                        out = model.chat(tok, str(prompt), history=[])  # type: ignore[attr-defined]
+                        dt_ms = 1000.0 * (time.time() - t0)
+                        if isinstance(out, tuple) and out:
+                            txt = str(out[0])
+                        else:
+                            txt = str(out)
+                        return txt, {"latency_ms": float(dt_ms), "prompt_tokens": prompt_tokens, "output_tokens": _count_tokens(txt)}
+                    except Exception:
+                        try:
+                            t0 = time.time()
+                            out = model.chat(tok, str(prompt))  # type: ignore[attr-defined]
+                            dt_ms = 1000.0 * (time.time() - t0)
+                            if isinstance(out, tuple) and out:
+                                txt = str(out[0])
+                            else:
+                                txt = str(out)
+                            return txt, {"latency_ms": float(dt_ms), "prompt_tokens": prompt_tokens, "output_tokens": _count_tokens(txt)}
+                        except Exception:
+                            # Fall through to .generate()
+                            pass
+
+        import torch
+
+        t0 = time.time()
+        inputs = tok(str(prompt), return_tensors="pt")
+        try:
+            prompt_tokens2 = int(inputs["input_ids"].shape[-1])
+        except Exception:
+            prompt_tokens2 = prompt_tokens
+        if torch.cuda.is_available():
+            inputs = {k: v.to(model.device) for k, v in inputs.items()}
+        with torch.inference_mode():
+            out = model.generate(
+                **inputs,
+                max_new_tokens=int(self.cfg.max_new_tokens),
+                do_sample=False,
+                temperature=0.0,
+                top_p=1.0,
+                top_k=0,
+                use_cache=False,
+            )
+        dt_ms = 1000.0 * (time.time() - t0)
+        txt = tok.decode(out[0], skip_special_tokens=True)
+        return txt, {"latency_ms": float(dt_ms), "prompt_tokens": prompt_tokens2, "output_tokens": _count_tokens(txt)}
+
+    def _cache_key(self, payload: dict[str, Any]) -> str:
+        b = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")
+        return hashlib.sha256(b).hexdigest()
+
+    def _cached_get(self, key: str) -> dict[str, Any] | None:
+        if self.cache_dir is None:
+            return None
+        p = self.cache_dir / f"{key}.json"
+        if not p.exists():
+            return None
+        try:
+            return json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            return None
+
+    def _cached_put(self, key: str, obj: dict[str, Any]) -> None:
+        if self.cache_dir is None:
+            return
+        p = self.cache_dir / f"{key}.json"
+        try:
+            # Best-effort atomic write to avoid corrupting the cache under multi-process runs.
+            tmp = self.cache_dir / f"{key}.tmp.{os.getpid()}"
+            tmp.write_text(json.dumps(obj, ensure_ascii=False, indent=2), encoding="utf-8")
+            tmp.replace(p)
+        except Exception:
+            return
+
+    def plan_cleanup_assignment(
+        self,
+        *,
+        task_kind: str,
+        step_index: int,
+        positions_xyz: np.ndarray,
+        sources_xyz: np.ndarray,
+        done_mask: np.ndarray,
+        n_agents: int,
+        stats_out: dict[str, Any] | None = None,
+    ) -> list[int] | None:
+        """Return a list length N: each entry is source index or -1.
+
+        Deterministic (do_sample=False), schema-validated, and cached.
+        """
+        pos = np.asarray(positions_xyz, dtype=np.float64).reshape(n_agents, 3)
+        src = np.asarray(sources_xyz, dtype=np.float64).reshape(-1, 3)
+        done = np.asarray(done_mask, dtype=bool).reshape(-1)
+
+        payload = {
+            "task": str(task_kind),
+            "step_index": int(step_index),
+            "n_agents": int(n_agents),
+            "sources_xyz": np.round(src, 2).tolist(),
+            "done": done.astype(int).tolist(),
+            "agents_xyz": np.round(pos, 2).tolist(),
+        }
+        key = self._cache_key({"model": str(self.cfg.model_path), **payload})
+        cached = self._cached_get(key)
+        if isinstance(cached, dict) and isinstance(cached.get("assign"), list):
+            if stats_out is not None:
+                stats_out.clear()
+                stats_out.update({"cached": 1, "latency_ms": 0.0, "prompt_tokens": 0, "output_tokens": 0})
+            return self._validate_assign(cached.get("assign"), n_agents=n_agents, n_sources=int(src.shape[0]), done=done)
+
+        try:
+            self._ensure_model()
+            assert self._tok is not None and self._model is not None
+        except Exception as e:
+            self._cached_put(key, {"error": f"model_load_failed: {type(e).__name__}: {e}"})
+            if stats_out is not None:
+                stats_out.clear()
+                stats_out.update({"cached": 0, "latency_ms": 0.0, "prompt_tokens": 0, "output_tokens": 0})
+            return None
+
+        sys_txt = (
+            "You are a planner for multi-agent underwater cleanup. "
+            "Your job is to assign each agent to a cleanup source index.\n"
+            "Return ONLY valid JSON with key: assign (list[int]). Do NOT include code fences.\n"
+            "Rules: length(assign)=N; each value is -1 or an integer in [0,S-1]; do not assign DONE sources."
+        )
+        user_txt = (
+            f"Task={task_kind}\n"
+            f"N={n_agents} agents\n"
+            f"S={int(src.shape[0])} sources (xyz): {payload['sources_xyz']}\n"
+            f"DONE mask: {payload['done']}\n"
+            f"Agents (xyz): {payload['agents_xyz']}\n"
+            "Output JSON now."
+        )
+
+        try:
+            tok = self._tok
+            if hasattr(tok, "apply_chat_template"):
+                messages = [{"role": "system", "content": sys_txt}, {"role": "user", "content": user_txt}]
+                text = tok.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)  # type: ignore[attr-defined]
+            else:
+                text = sys_txt + "\n\n" + user_txt + "\n\nJSON:"
+            decoded, st = self._generate_text(text)
+        except Exception as e:
+            self._cached_put(key, {"error": f"generate_failed: {type(e).__name__}: {e}"})
+            if stats_out is not None:
+                stats_out.clear()
+                stats_out.update({"cached": 0, "latency_ms": 0.0, "prompt_tokens": 0, "output_tokens": 0})
+            return None
+
+        parsed = _extract_json(decoded)
+        if not isinstance(parsed, dict):
+            self._cached_put(key, {"error": "parse_failed", "raw": decoded})
+            if stats_out is not None:
+                stats_out.clear()
+                stats_out.update({"cached": 0, **st})
+            return None
+        assign = parsed.get("assign", None)
+        valid = self._validate_assign(assign, n_agents=n_agents, n_sources=int(src.shape[0]), done=done)
+        if valid is None:
+            self._cached_put(key, {"error": "schema_failed", "raw": decoded, "parsed": parsed})
+            if stats_out is not None:
+                stats_out.clear()
+                stats_out.update({"cached": 0, **st})
+            return None
+        out_obj = {"assign": valid}
+        self._cached_put(key, out_obj)
+        if stats_out is not None:
+            stats_out.clear()
+            stats_out.update({"cached": 0, **st})
+        return valid
+
+    def plan_waypoint_assignment(
+        self,
+        *,
+        task_kind: str,
+        step_index: int,
+        positions_xyz: np.ndarray,
+        waypoints_xyz: np.ndarray,
+        n_agents: int,
+        detected_mask: np.ndarray | None = None,
+        stats_out: dict[str, Any] | None = None,
+    ) -> list[int] | None:
+        """Assign each agent a waypoint index along a path (high-level planning)."""
+        pos = np.asarray(positions_xyz, dtype=np.float64).reshape(n_agents, 3)
+        wps = np.asarray(waypoints_xyz, dtype=np.float64).reshape(-1, 3)
+        if wps.shape[0] < 2:
+            return None
+
+        det = None
+        if detected_mask is not None:
+            try:
+                det = np.asarray(detected_mask, dtype=bool).reshape(-1)
+            except Exception:
+                det = None
+
+        # Downsample the waypoint list in the prompt to keep it compact/deterministic.
+        stride = int(max(1, math.ceil(float(wps.shape[0]) / 24.0)))
+        payload = {
+            "task": str(task_kind),
+            "step_index": int(step_index),
+            "n_agents": int(n_agents),
+            "waypoints_preview_xyz": np.round(wps[::stride], 2).tolist(),
+            "agents_xyz": np.round(pos, 2).tolist(),
+            "detected_mask": det.astype(int).tolist() if det is not None else None,
+        }
+        key = self._cache_key({"model": str(self.cfg.model_path), "kind": "waypoint_assignment", **payload})
+        cached = self._cached_get(key)
+        if isinstance(cached, dict) and isinstance(cached.get("assign_wp"), list):
+            if stats_out is not None:
+                stats_out.clear()
+                stats_out.update({"cached": 1, "latency_ms": 0.0, "prompt_tokens": 0, "output_tokens": 0})
+            return self._validate_wp_assign(cached.get("assign_wp"), n_agents=n_agents, n_wp=int(wps.shape[0]))
+
+        try:
+            self._ensure_model()
+            assert self._tok is not None and self._model is not None
+        except Exception as e:
+            self._cached_put(key, {"error": f"model_load_failed: {type(e).__name__}: {e}"})
+            if stats_out is not None:
+                stats_out.clear()
+                stats_out.update({"cached": 0, "latency_ms": 0.0, "prompt_tokens": 0, "output_tokens": 0})
+            return None
+
+        sys_txt = (
+            "You are a planner for multi-agent underwater search.\n"
+            "Assign each agent a waypoint index along a path so agents spread out to cover the path.\n"
+            "Return ONLY valid JSON with key: assign_wp (list[int]). Do NOT include code fences.\n"
+            "Rules: length(assign_wp)=N; each value is an integer in [0,K-1]."
+        )
+        user_txt = (
+            f"Task={task_kind}\n"
+            f"N={n_agents} agents\n"
+            f"K={int(wps.shape[0])} waypoints (preview): {payload['waypoints_preview_xyz']}\n"
+            f"Agents (xyz): {payload['agents_xyz']}\n"
+            f"Detected mask (optional): {payload['detected_mask']}\n"
+            "Output JSON now."
+        )
+
+        try:
+            tok = self._tok
+            if hasattr(tok, "apply_chat_template"):
+                messages = [{"role": "system", "content": sys_txt}, {"role": "user", "content": user_txt}]
+                text = tok.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)  # type: ignore[attr-defined]
+            else:
+                text = sys_txt + "\n\n" + user_txt + "\n\nJSON:"
+            decoded, st = self._generate_text(text)
+        except Exception as e:
+            self._cached_put(key, {"error": f"generate_failed: {type(e).__name__}: {e}"})
+            if stats_out is not None:
+                stats_out.clear()
+                stats_out.update({"cached": 0, "latency_ms": 0.0, "prompt_tokens": 0, "output_tokens": 0})
+            return None
+
+        parsed = _extract_json(decoded)
+        if not isinstance(parsed, dict):
+            self._cached_put(key, {"error": "parse_failed", "raw": decoded})
+            if stats_out is not None:
+                stats_out.clear()
+                stats_out.update({"cached": 0, **st})
+            return None
+        assign = parsed.get("assign_wp", None)
+        valid = self._validate_wp_assign(assign, n_agents=n_agents, n_wp=int(wps.shape[0]))
+        if valid is None:
+            self._cached_put(key, {"error": "schema_failed", "raw": decoded, "parsed": parsed})
+            if stats_out is not None:
+                stats_out.clear()
+                stats_out.update({"cached": 0, **st})
+            return None
+        out_obj = {"assign_wp": valid}
+        self._cached_put(key, out_obj)
+        if stats_out is not None:
+            stats_out.clear()
+            stats_out.update({"cached": 0, **st})
+        return valid
+
+    @staticmethod
+    def _validate_assign(assign_any: Any, *, n_agents: int, n_sources: int, done: np.ndarray) -> list[int] | None:
+        if not isinstance(assign_any, list) or len(assign_any) < int(n_agents):
+            return None
+        if len(assign_any) > int(n_agents):
+            assign_any = list(assign_any[: int(n_agents)])
+        out: list[int] = []
+        for a in assign_any:
+            try:
+                ai = int(a)
+            except Exception:
+                return None
+            if ai == -1:
+                out.append(-1)
+                continue
+            if ai < 0 or ai >= int(n_sources):
+                return None
+            if bool(done[ai]):
+                return None
+            out.append(ai)
+        return out
+
+    @staticmethod
+    def _validate_wp_assign(assign_any: Any, *, n_agents: int, n_wp: int) -> list[int] | None:
+        if not isinstance(assign_any, list) or len(assign_any) < int(n_agents):
+            return None
+        if len(assign_any) > int(n_agents):
+            assign_any = list(assign_any[: int(n_agents)])
+        out: list[int] = []
+        for a in assign_any:
+            try:
+                ii = int(a)
+            except Exception:
+                return None
+            if ii < 0 or ii >= int(n_wp):
+                return None
+            out.append(ii)
+        return out
+
+
+def _extract_json(text: str) -> Any:
+    s = str(text)
+    # Scan for balanced {...} blocks and return the last successfully parsed JSON object.
+    last = None
+    depth = 0
+    start = None
+    for i, ch in enumerate(s):
+        if ch == "{":
+            if depth == 0:
+                start = i
+            depth += 1
+        elif ch == "}":
+            if depth <= 0:
+                continue
+            depth -= 1
+            if depth == 0 and start is not None:
+                frag = s[start : i + 1]
+                try:
+                    last = json.loads(frag)
+                except Exception:
+                    pass
+                start = None
+    return last
+
+
+_GLOBAL_MODEL_CACHE: dict[str, tuple[Any, Any]] = {}
