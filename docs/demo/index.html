@@ -404,9 +404,13 @@
         }
     </style>
     <link rel="stylesheet" href="navigation.css">
-    <link rel="stylesheet" href="../static/css/button-nudge.css">
+    <link rel="stylesheet" href="../static/css/button-guide.css">
 </head>
 <body class="demo-guide-page">
+    <a id="project-home" class="project-home" href="../" aria-label="Back to OneOcean project home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"/></svg>
+        Project Home
+    </a>
 
     <!-- Welcome Popup -->
     <div id="welcome-popup">
@@ -453,7 +457,6 @@
 
     <div id="ui-panel">
         <nav class="oneocean-site-nav" aria-label="OneOcean navigation">
-            <a href="../">Project</a>
             <a href="../platform/">Platform</a>
             <a href="https://github.com/NEBULIS-Lab/OneOcean" target="_blank" rel="noopener">Code</a>
             <a href="../oneocean_paper.pdf" target="_blank" rel="noopener">Paper</a>
@@ -557,11 +560,11 @@
     <div id="top-right-backdrop"></div>
     <div id="top-brand"><img src="example/logo.png" alt="OneOcean logo"></div>
     <div class="task-launch">
-        <span class="button-nudge button-nudge--side" aria-hidden="true">
-            <span class="button-nudge__note">See the tasks</span>
-            <svg viewBox="0 0 106 32" fill="none"><path d="M4 23C26 5 41 3 59 14S82 29 101 19M101 19L91 14M101 19L93 28" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <a id="btn-results" href="tasks.html" aria-describedby="task-entry-guide">Open Our Tasks Demo <span aria-hidden="true">→</span></a>
+        <span id="task-entry-guide" class="button-guide" role="note">
+            <span class="guide-heading"><span class="guide-signal" aria-hidden="true"><i></i><i></i><i></i></span>Explore the tasks</span>
+            <span class="guide-copy">See the robots in action.</span>
         </span>
-        <a id="btn-results" href="tasks.html">Open Our Tasks Demo <span aria-hidden="true">→</span></a>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>

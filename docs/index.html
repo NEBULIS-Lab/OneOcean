@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="static/css/bulma.min.css">
   <link rel="stylesheet" href="static/css/index.css">
   <link rel="stylesheet" href="static/css/oneocean.css">
-  <link rel="stylesheet" href="static/css/button-nudge.css">
+  <link rel="stylesheet" href="static/css/button-guide.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -72,14 +72,14 @@
 
               <div class="publication-links oneocean-links">
                 <span class="link-block guided-link">
-                  <span class="button-nudge button-nudge--above" aria-hidden="true">
-                    <span class="button-nudge__note">Try it live</span>
-                    <svg viewBox="0 0 72 44" fill="none"><path d="M4 9C21-1 52 0 53 16S42 32 28 39M28 39L29 29M28 39L39 36" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  </span>
-                  <a href="demo/" target="_blank" rel="noopener" class="external-link button is-normal is-rounded is-dark">
+                  <a id="online-demo" href="demo/" target="_blank" rel="noopener" aria-describedby="demo-entry-guide" class="external-link button is-normal is-rounded demo-highlight">
                     <span class="icon"><i class="fas fa-play-circle"></i></span>
                     <span>Online Demo</span>
                   </a>
+                  <span id="demo-entry-guide" class="button-guide" role="note">
+                    <span class="guide-heading"><span class="guide-signal" aria-hidden="true"><i></i><i></i><i></i></span>Start here</span>
+                    <span class="guide-copy">Explore the ocean in 3D.</span>
+                  </span>
                 </span>
                 <span class="link-block">
                   <a href="https://github.com/NEBULIS-Lab/OneOcean" target="_blank" rel="noopener" class="external-link button is-normal is-rounded is-dark">
