@@ -6,7 +6,7 @@
 - `platform/index.html`: platform/data usage page with a static GitHub-Pages explorer for a lightweight current-field subset.
 - `demo/`: integrated interactive demo, task demos, and six-task overview.
 - `oneocean_appendix.pdf`: standalone copy of the appendix, retained for existing links.
-- `oneocean_paper.pdf`: two-column arXiv version with colored reference/URL links, an abstract box occupying one column, resource icons, and the complete original and expanded appendix.
+- `oneocean_paper.pdf`: two-column arXiv version with blue reference/URL links, an abstract box occupying one column, Project/Code/Demo/Hugging Face icons, and the complete original and expanded appendix.
 - `static/`: website assets (logo, copied paper figures, demo media, CSS, JavaScript, and the exported web-data subset under `static/data/`).
 
 Local preview:
