@@ -180,7 +180,6 @@
             object-fit: contain;
         }
 
-
         /* Hidden file input */
         #file-input { display: none; }
 
@@ -405,7 +404,7 @@
         }
     </style>
     <link rel="stylesheet" href="navigation.css">
-    <link rel="stylesheet" href="../static/css/explore-guide.css">
+    <link rel="stylesheet" href="../static/css/button-nudge.css">
 </head>
 <body class="demo-guide-page">
 
@@ -557,11 +556,13 @@
 
     <div id="top-right-backdrop"></div>
     <div id="top-brand"><img src="example/logo.png" alt="OneOcean logo"></div>
-    <a id="btn-results" class="explore-guide" href="tasks.html" aria-label="Explore the tasks">
-    <span class="explore-guide__beacon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M13 9l11 7-11 7V9Z" fill="currentColor"/><path d="M7 8a12 12 0 0 0 0 16" stroke="#9FFFF0" stroke-width="1.5" stroke-linecap="round"/></svg></span>
-    <span class="explore-guide__copy"><span class="explore-guide__eyebrow">See OneOcean in action</span><span class="explore-guide__label">Explore the tasks</span></span>
-    <span class="explore-guide__arrow" aria-hidden="true">↗</span>
-  </a>
+    <div class="task-launch">
+        <span class="button-nudge button-nudge--side" aria-hidden="true">
+            <span class="button-nudge__note">See the tasks</span>
+            <svg viewBox="0 0 106 32" fill="none"><path d="M4 23C26 5 41 3 59 14S82 29 101 19M101 19L91 14M101 19L93 28" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <a id="btn-results" href="tasks.html">Open Our Tasks Demo <span aria-hidden="true">→</span></a>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -2764,7 +2765,6 @@
                 welcomePopup.classList.add('hidden');
             }
         });
-
 
         animate();
     </script>

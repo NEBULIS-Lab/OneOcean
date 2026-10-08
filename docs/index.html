@@ -28,18 +28,13 @@
   <link rel="stylesheet" href="static/css/bulma.min.css">
   <link rel="stylesheet" href="static/css/index.css">
   <link rel="stylesheet" href="static/css/oneocean.css">
-  <link rel="stylesheet" href="static/css/explore-guide.css">
+  <link rel="stylesheet" href="static/css/button-nudge.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script defer src="static/js/index.js"></script>
 </head>
 <body>
-  <a id="demo-guide" class="explore-guide" href="demo/" aria-label="Try the live demo">
-    <span class="explore-guide__beacon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M13 9l11 7-11 7V9Z" fill="currentColor"/><path d="M7 8a12 12 0 0 0 0 16" stroke="#9FFFF0" stroke-width="1.5" stroke-linecap="round"/></svg></span>
-    <span class="explore-guide__copy"><span class="explore-guide__eyebrow">Explore OneOcean</span><span class="explore-guide__label">Try the live demo</span></span>
-    <span class="explore-guide__arrow" aria-hidden="true">↗</span>
-  </a>
   <button class="scroll-to-top" onclick="scrollToTop()" title="Scroll to top" aria-label="Scroll to top">
     <i class="fas fa-chevron-up"></i>
   </button>
@@ -76,8 +71,12 @@
               </p>
 
               <div class="publication-links oneocean-links">
-                <span class="link-block">
-                  <a href="demo/" target="_blank" rel="noopener" class="external-link button is-normal is-rounded is-dark demo-primary">
+                <span class="link-block guided-link">
+                  <span class="button-nudge button-nudge--above" aria-hidden="true">
+                    <span class="button-nudge__note">Try it live</span>
+                    <svg viewBox="0 0 72 44" fill="none"><path d="M4 9C21-1 52 0 53 16S42 32 28 39M28 39L29 29M28 39L39 36" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </span>
+                  <a href="demo/" target="_blank" rel="noopener" class="external-link button is-normal is-rounded is-dark">
                     <span class="icon"><i class="fas fa-play-circle"></i></span>
                     <span>Online Demo</span>
                   </a>
