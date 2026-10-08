@@ -4,7 +4,6 @@
 
 <a href="https://nebulis-lab.github.io/OneOcean/demo/"><img src="https://img.shields.io/badge/Online%20Demo-GitHub%20Pages-0EA5E9.svg?logo=github&logoColor=white" alt="Online Demo"></a>
 <a href="https://youtu.be/Fz2medRUxwo"><img src="https://img.shields.io/badge/Intro%20Video-YouTube-FF0000.svg?logo=youtube&logoColor=white" alt="Intro Video"></a>
-<a href="docs/oneocean_appendix.pdf"><img src="https://img.shields.io/badge/Supplement-Materials-16A34A.svg?labelColor=16A34A" alt="Supplementary Materials"></a>
 <a href="docs/oneocean_paper.pdf"><img src="https://img.shields.io/badge/Paper-PDF-DC2626.svg" alt="Paper PDF"></a>
 <a href="https://zenodo.org/records/18837700"><img src="https://img.shields.io/badge/Dataset-Zenodo-2563EB.svg" alt="Zenodo Dataset"></a>
 <a href="https://huggingface.co/datasets/anonymous321123/OneOcean_Environment_Dataset"><img src="https://img.shields.io/badge/Dataset-HuggingFace-F59E0B.svg?logo=huggingface&logoColor=white" alt="HuggingFace Dataset"></a>

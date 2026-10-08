@@ -5,8 +5,8 @@
 - `index.html`: primary project website for the paper and public release.
 - `platform/index.html`: platform/data usage page with a static GitHub-Pages explorer for a lightweight current-field subset.
 - `demo/`: integrated interactive demo, task demos, and six-task overview.
-- `oneocean_appendix.pdf`: supplementary appendix with author information.
-- `oneocean_paper.pdf`: paper PDF linked from the project website.
+- `oneocean_appendix.pdf`: standalone copy of the appendix, retained for existing links.
+- `oneocean_paper.pdf`: complete paper with the original and expanded appendix, linked from the project website.
 - `static/`: website assets (logo, copied paper figures, demo media, CSS, JavaScript, and the exported web-data subset under `static/data/`).
 
 Local preview:

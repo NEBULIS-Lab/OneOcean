@@ -28,12 +28,18 @@
   <link rel="stylesheet" href="static/css/bulma.min.css">
   <link rel="stylesheet" href="static/css/index.css">
   <link rel="stylesheet" href="static/css/oneocean.css">
+  <link rel="stylesheet" href="static/css/explore-guide.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script defer src="static/js/index.js"></script>
 </head>
 <body>
+  <a id="demo-guide" class="explore-guide" href="demo/" aria-label="Try the live demo">
+    <span class="explore-guide__beacon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M13 9l11 7-11 7V9Z" fill="currentColor"/><path d="M7 8a12 12 0 0 0 0 16" stroke="#9FFFF0" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    <span class="explore-guide__copy"><span class="explore-guide__eyebrow">Explore OneOcean</span><span class="explore-guide__label">Try the live demo</span></span>
+    <span class="explore-guide__arrow" aria-hidden="true">↗</span>
+  </a>
   <button class="scroll-to-top" onclick="scrollToTop()" title="Scroll to top" aria-label="Scroll to top">
     <i class="fas fa-chevron-up"></i>
   </button>
@@ -71,7 +77,7 @@
 
               <div class="publication-links oneocean-links">
                 <span class="link-block">
-                  <a href="demo/" target="_blank" rel="noopener" class="external-link button is-normal is-rounded is-dark">
+                  <a href="demo/" target="_blank" rel="noopener" class="external-link button is-normal is-rounded is-dark demo-primary">
                     <span class="icon"><i class="fas fa-play-circle"></i></span>
                     <span>Online Demo</span>
                   </a>
@@ -104,12 +110,6 @@
                   <a href="https://huggingface.co/datasets/anonymous321123/OneOcean_Environment_Dataset" target="_blank" rel="noopener" class="external-link button is-normal is-rounded is-dark">
                     <span class="icon"><i class="fas fa-box-open"></i></span>
                     <span>Hugging Face</span>
-                  </a>
-                </span>
-                <span class="link-block">
-                  <a href="oneocean_appendix.pdf" target="_blank" rel="noopener" class="external-link button is-normal is-rounded is-dark">
-                    <span class="icon"><i class="fas fa-folder-open"></i></span>
-                    <span>Supplementary</span>
                   </a>
                 </span>
               </div>
