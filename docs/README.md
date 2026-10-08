@@ -30,4 +30,13 @@ The project page, platform guide (`platform/`), and demo (`demo/`) are deployed 
 In repository Settings → Pages, select **GitHub Actions** as the source.
 The paper and appendix PDFs are published from the current author-attributed manuscript.
 
+Published entry points:
+
+- [Project website](https://nebulis-lab.github.io/OneOcean/)
+- [Platform guide](https://nebulis-lab.github.io/OneOcean/platform/)
+- [Interactive demo](https://nebulis-lab.github.io/OneOcean/demo/)
+- [Task demos](https://nebulis-lab.github.io/OneOcean/demo/tasks.html)
+- [Paper](https://nebulis-lab.github.io/OneOcean/oneocean_paper.pdf)
+- [Supplementary appendix](https://nebulis-lab.github.io/OneOcean/oneocean_appendix.pdf)
+
 The demo, screenshots, and task pages are maintained directly in `docs/demo/` as part of this repository.
