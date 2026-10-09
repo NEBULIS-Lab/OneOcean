@@ -21,7 +21,7 @@ This folder provides a lightweight, GitHub Pages–friendly underwater web demo 
 
    <img src="example/task1.png" width="720" />
 
-2. **Task 2 — Underwater Pollution Lift to Surface (5 UUVs)**
+2. **Task 2 — Underwater Pollution Lift (5 UUVs)**
    - A barrel near the seabed is attached by four UUVs from front/back/left/right and lifted away from terrain relief.
    - After staying off-terrain briefly, a fifth UUV attaches from below and the team carries the barrel upward to the surface.
 
@@ -29,7 +29,7 @@ This folder provides a lightweight, GitHub Pages–friendly underwater web demo 
 
 3. **Task 3 — Fish Protection / Herding (8 UUVs)**
    - A fish school spawns near shore; eight UUVs coordinate to herd the school toward a deep-sea target region.
-   - Progress is tracked in 4 stages (each quarter of the path is a milestone); reaching the deep-sea corner/target counts as full success.
+   - Progress is measured at four milestones along the route. The task ends when the school reaches the target region.
 
    <img src="example/task3.png" width="720" />
 

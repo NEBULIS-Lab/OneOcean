@@ -205,7 +205,7 @@
             <a href="../">Project</a>
             <a href="../platform/">Platform</a>
             <a href="https://github.com/NEBULIS-Lab/OneOcean" target="_blank" rel="noopener">Code</a>
-            <a href="../oneocean_paper.pdf?v=arxiv-compact-b6345f5b" target="_blank" rel="noopener">Paper</a>
+            <a href="../oneocean_paper.pdf?v=arxiv-60244d8ef0" target="_blank" rel="noopener">Paper</a>
         </nav>
         <div class="ui-header">OneOcean Tasks Demo</div>
         <div class="disclaimer">
@@ -214,7 +214,7 @@
 
         <div class="section-title">Tasks</div>
         <button id="btn-task1" class="task-btn active">Task 1 — Surface Pollution Cleanup</button>
-        <button id="btn-task2" class="task-btn">Task 2 — Underwater Pollution Lift to Surface</button>
+        <button id="btn-task2" class="task-btn">Task 2 — Underwater Pollution Lift</button>
         <button id="btn-task3" class="task-btn">Task 3 — Fish Protection / Herding</button>
         <button id="btn-task4" class="task-btn">Task 4 — Area Scan (3D Terrain)</button>
         <button id="btn-task5" class="task-btn">Task 5 — Pipeline Inspection (Leak Detection)</button>
@@ -1592,7 +1592,7 @@
                     updateUUVProps(u, dt, time);
                 }
                 hud.progress.textContent = 'Dispersing';
-                hud.note.textContent = 'Devices slowly leave and disperse around.';
+                hud.note.textContent = 'The UUVs disperse after the lift.';
                 if (allReached && task2State.t > 2.0) {
                     task2State.phase = 'DONE';
                     task2State.t = 0.0;
@@ -3109,21 +3109,21 @@
                 hud.sourcesTitle.textContent = ' (Task 1)';
                 hud.active.textContent = 'Task 1';
                 hud.uuvs.textContent = String(TASK1_UUVS);
-                hud.desc.textContent = `${TASK1_UUVS} UUVs. Surface pollution cleanup: each UUV takes one yellow barrel source at a time, approaches from different directions, stays very close for a short neutralization window (visible purifier), then the diffusion stops and the source changes color. The UUV then moves to the next source until all are cleaned.`;
+                hud.desc.textContent = `${TASK1_UUVS} UUVs. Surface Pollution Cleanup: UUVs visit pollution sources and remain nearby until cleanup is complete, then move to the next source.`;
                 resetTask1();
             } else if (taskId === 'TASK2') {
                 hud.sourcesTitle.textContent = ' (Task 2)';
                 hud.sources.innerHTML = '—';
                 hud.active.textContent = 'Task 2';
                 hud.uuvs.textContent = String(TASK2_UUVS);
-                hud.desc.textContent = `${TASK2_UUVS} UUVs. Underwater lift: four UUVs attach tightly from front/back/left/right to lift a barrel away from seabed terrain and keep it off the relief for a short duration; then the fifth UUV attaches from below and the team carries the barrel upward in formation until it reaches the surface for completion.`;
+                hud.desc.textContent = `${TASK2_UUVS} UUVs. Underwater Pollution Lift: Four UUVs lift a barrel clear of the seabed. A fifth joins from below, and the team carries it to the surface.`;
                 resetTask2();
             } else if (taskId === 'TASK3') {
                 hud.sourcesTitle.textContent = ' (Task 3)';
                 hud.sources.innerHTML = '—';
                 hud.active.textContent = 'Task 3';
                 hud.uuvs.textContent = String(TASK3_UUVS);
-                hud.desc.textContent = `${TASK3_UUVS} UUVs. Fish protection / herding: a school spawns near shore, then UUVs coordinate behind and around the school to drive it along a deep-sea direction. Task progress is tracked in 4 stages (each quarter of the path counts as a milestone), and full success is reached when the school arrives near the deep-sea corner/target at the deepest zone.`;
+                hud.desc.textContent = `${TASK3_UUVS} UUVs. Fish Protection / Herding: The UUV team guides a fish school from the shore toward deeper water. Progress is measured at four milestones along the route. The task ends when the school reaches the target region.`;
                 resetTask3();
             } else if (taskId === 'TASK4') {
                 hud.sourcesTitle.textContent = ' (Task 4)';

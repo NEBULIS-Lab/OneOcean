@@ -24,7 +24,7 @@ This is the official OneOcean repository, combining the simulation code, project
 
 *Corresponding author: Ningxin Su, [ningxinsu@hkust-gz.edu.cn](mailto:ningxinsu@hkust-gz.edu.cn).
 
-It keeps only the code paths used by the paper:
+The repository includes:
 
 - `Data_pipeline/`: ocean-environment data pipeline and dataset-variant generation.
 - `OCPNet/`: pollution-field and current-aware pollution modeling code.
@@ -32,9 +32,7 @@ It keeps only the code paths used by the paper:
 - `tracks/oceangym_benchmark/`: OceanGym and HoloOcean benchmark used for scene-grounded underwater evaluation and media generation.
 - `integrations/ros2/`: optional ROS 2 Jazzy bridge for standard robot middleware integration.
 - `docs/demo/`: interactive browser demo, deployed with the project website.
-- `tests/`: lightweight regression tests for the final benchmark surfaces.
-
-Exploratory branches, deprecated simulators, internal planning notes, and cached run outputs are intentionally excluded from version control.
+- `tests/`: regression tests for the benchmark.
 
 ## Repository layout
 
@@ -62,7 +60,7 @@ Notes:
   - `COPERNICUSMARINE_USERNAME`
   - `COPERNICUSMARINE_PASSWORD`
 - The OceanGym benchmark requires a working HoloOcean and Ocean package installation. That dependency is managed separately from the base requirements.
-- BC training and some local planner backends in `benchmark_core/` require extra ML dependencies such as `torch`.
+- Behavior Cloning (BC) training and some local planner backends in `benchmark_core/` require extra ML dependencies such as `torch`.
 
 ## Quickstart
 

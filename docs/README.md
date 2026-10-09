@@ -1,6 +1,6 @@
 # Web Documentation
 
-`docs/` contains the public website sources served by GitHub Pages.
+`docs/` contains the public website sources served by GitHub Pages. The platform explorer loads a pre-exported static dataset sample and filters it in the browser.
 
 - `index.html`: primary project website for the paper and public release.
 - `platform/index.html`: platform/data usage page with a static GitHub-Pages explorer for a lightweight current-field subset.
@@ -28,7 +28,7 @@ python tools/export_platform_web_data.py \
 The repository is published at https://nebulis-lab.github.io/OneOcean/.
 The project page, platform guide (`platform/`), and demo (`demo/`) are deployed together from `docs/` by `.github/workflows/pages.yml` on pushes to `main`.
 In repository Settings → Pages, select **GitHub Actions** as the source.
-The paper PDF is published from the independent arXiv version of the author-attributed manuscript; the standalone appendix retains its existing format.
+The paper PDF contains the complete arXiv manuscript; the standalone appendix contains the same supplementary sections.
 
 Published entry points:
 
